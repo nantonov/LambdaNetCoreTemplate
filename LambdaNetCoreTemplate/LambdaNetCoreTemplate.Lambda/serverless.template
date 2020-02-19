@@ -8,7 +8,7 @@
     "ProductCreateFunction" : {
       "Type" : "AWS::Serverless::Function",
       "Properties": {
-        "Handler": "LambdaNetCoreTemplate.Lambda::LambdaNetCoreTemplate.Lambda.Functions.Product.CreateFunction::CreateAsync",
+        "Handler": "LambdaNetCoreTemplate.Lambda::LambdaNetCoreTemplate.Lambda.Functions.ProductFunctions.CreateFunction::CreateAsync",
         "Runtime": "dotnetcore2.1",
         "CodeUri": "",
         "Description": "Create a new product",
