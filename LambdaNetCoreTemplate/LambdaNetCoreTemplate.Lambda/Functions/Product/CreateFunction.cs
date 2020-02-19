@@ -1,24 +1,22 @@
-
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using LambdaNetCoreTemplate.Application.Model;
 using LambdaNetCoreTemplate.Application.Requests;
 using LambdaNetCoreTemplate.Lambda.Functions.Base;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
-namespace LambdaNetCoreTemplate.Lambda.Functions
+namespace LambdaNetCoreTemplate.Lambda.Functions.Product
 {
-    public class Function : BaseFunction
+    public class CreateFunction : BaseFunction
     {
         [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
-        public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
+        public async Task<APIGatewayProxyResponse> CreateAsync(APIGatewayProxyRequest request, ILambdaContext context)
         {
             var requestModel = new AddProductRequest
             {
-                Model = JsonConvert.DeserializeObject<Product>(request.Body)
+                Model = JsonConvert.DeserializeObject<Application.Model.Product>(request.Body)
             };
 
             var mediator = ServiceProvider.GetRequiredService<IMediator>();

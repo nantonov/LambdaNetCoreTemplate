@@ -1,0 +1,37 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Transform" : "AWS::Serverless-2016-10-31",
+  "Description" : "Starting template for an AWS Serverless Application.",
+  "Parameters" : {
+  },
+  "Resources" : {
+    "ProductCreateFunction" : {
+      "Type" : "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "LambdaNetCoreTemplate.Lambda::LambdaNetCoreTemplate.Lambda.Functions.Product.CreateFunction::CreateAsync",
+        "Runtime": "dotnetcore2.1",
+        "CodeUri": "",
+        "Description": "Create a new product",
+        "MemorySize": 256,
+        "Timeout": 30,
+        "Role": "arn:aws:iam::304639198633:role/ProductStack-ProductCreateFunctionRole-6HJ1KBWF4HZS",
+        "Policies": [ "AWSLambdaFullAccess" ],
+        "Events": {
+          "ProxyResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "product",
+              "Method": "POST"
+            }
+          }
+        }
+      }
+    }
+  },
+  "Outputs" : {
+    "ApiURL" : {
+        "Description" : "API endpoint URL for Prod environment",
+        "Value" : { "Fn::Sub" : "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/" }
+    }
+  }
+}
