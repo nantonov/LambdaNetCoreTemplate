@@ -1,20 +1,27 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
-using LambdaNetCoreTemplate.Application.Model;
 using LambdaNetCoreTemplate.Application.Requests;
 using MediatR;
 
 namespace LambdaNetCoreTemplate.Application.Handlers
 {
-    public class ProductHandler : IRequestHandler<AddProductRequest, Product>
+    public class ProductHandler : IRequestHandler<AddProductRequest>
     {
-        public Task<Product> Handle(AddProductRequest request, CancellationToken cancellationToken)
+        private const int MaxPrice = 42;
+
+        public Task<Unit> Handle(AddProductRequest request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(new Product
+            Console.WriteLine($"{nameof(request.Model.Name)}: {request.Model.Name} & {nameof(request.Model.Price)}: {request.Model.Price}");
+
+            if (request.Model.Price > MaxPrice)
             {
-                Name = request.Model.Name + "TEST",
-                Price = request.Model.Price
-            });
+                throw new ArgumentException($"{nameof(request.Model.Price)} must be less than {MaxPrice} or equal.");
+            }
+
+            //PUT TO SNS
+
+            return Unit.Task;
         }
     }
 }

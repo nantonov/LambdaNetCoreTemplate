@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using Amazon.SimpleNotificationService.Model;
 using LambdaNetCoreTemplate.Application.Model;
 using LambdaNetCoreTemplate.Application.Requests;
 using LambdaNetCoreTemplate.Lambda.Functions.Base;
@@ -16,8 +17,15 @@ namespace LambdaNetCoreTemplate.Lambda.Functions.ProductFunctions
         {
             try
             {
-                var response = await Process<AddProductRequest, Product, Product>(request.Body);
-                return ApiGatewayResponse.Ok(response);
+                await Process<AddProductRequest, Product>(request.Body);
+
+                var publishRequest = new PublishRequest();
+                publishRequest.TopicArn = "arn:aws:sns:eu-west-2:304639198633:ProductTopic";
+                publishRequest.Message = request.Body;
+
+                await PublishToSns(publishRequest);
+
+                return ApiGatewayResponse.Ok();
             }
             catch (Exception e)
             {

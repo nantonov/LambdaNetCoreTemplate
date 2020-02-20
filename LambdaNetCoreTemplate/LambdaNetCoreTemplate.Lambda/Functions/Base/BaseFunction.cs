@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Amazon.SimpleNotificationService;
+using Amazon.SimpleNotificationService.Model;
 using LambdaNetCoreTemplate.Application.Requests.Base;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +30,15 @@ namespace LambdaNetCoreTemplate.Lambda.Functions.Base
             var result = (TResponse)await mediator.Send(request);
 
             return result;
+        }
+
+        protected virtual async Task PublishToSns(PublishRequest publishRequest)
+        {
+            var snsClient = ServiceProvider.GetRequiredService<AmazonSimpleNotificationServiceClient>();
+            var publishResponse = await snsClient.PublishAsync(publishRequest);
+
+            Console.WriteLine($"SNS Message ID {publishResponse.MessageId}");
+            
         }
 
         protected virtual Task Process<TRequest, TModel>(string json) 

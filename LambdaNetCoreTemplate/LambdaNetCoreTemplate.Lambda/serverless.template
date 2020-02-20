@@ -1,12 +1,11 @@
 {
-  "AWSTemplateFormatVersion" : "2010-09-09",
-  "Transform" : "AWS::Serverless-2016-10-31",
-  "Description" : "Starting template for an AWS Serverless Application.",
-  "Parameters" : {
-  },
-  "Resources" : {
-    "ProductCreateFunction" : {
-      "Type" : "AWS::Serverless::Function",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "Starting template for an AWS Serverless Application.",
+  "Parameters": {},
+  "Resources": {
+    "ProductCreateFunction": {
+      "Type": "AWS::Serverless::Function",
       "Properties": {
         "Handler": "LambdaNetCoreTemplate.Lambda::LambdaNetCoreTemplate.Lambda.Functions.ProductFunctions.CreateFunction::CreateAsync",
         "Runtime": "dotnetcore2.1",
@@ -15,7 +14,7 @@
         "MemorySize": 256,
         "Timeout": 30,
         "Role": "arn:aws:iam::304639198633:role/ProductStack-ProductCreateFunctionRole-6HJ1KBWF4HZS",
-        "Policies": [ "AWSLambdaFullAccess" ],
+        "Policies": ["AWSLambdaFullAccess"],
         "Events": {
           "ProxyResource": {
             "Type": "Api",
@@ -26,12 +25,103 @@
           }
         }
       }
+    },
+    "ProductSqsHandlerFunction": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "LambdaNetCoreTemplate.Lambda::LambdaNetCoreTemplate.Lambda.Functions.ProductFunctions.SqsHandlerFunction::SqsHandler",
+        "Runtime": "dotnetcore2.1",
+        "CodeUri": "",
+        "Description": "Receive SQS message and handle it",
+        "MemorySize": 256,
+        "Timeout": 30,
+        "Role": "arn:aws:iam::304639198633:role/SqsFullAccessRole",
+        "Policies": ["AWSLambdaFullAccess"]
+      }
+    },
+    "ProducTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": "ProductTopic"
+      }
+    },
+    "ProductQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": ["DeadLetterQueue", "Arn"]
+          },
+          "maxReceiveCount": 5
+        }
+      }
+    },
+    "DeadLetterQueue": {
+      "Type": "AWS::SQS::Queue"
+    },
+    "ProductSnsToProductSqsPolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Id": "SnsToSqsPolicy",
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Sid": "allow-sns-messages",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": ["SQS:SendMessage"],
+            "Resource": {
+              "Fn::GetAtt": ["ProductQueue", "Arn"]
+            },
+            "Condition": {
+              "ArnEquals": {
+                "aws:SourceArn": {
+                  "Ref": "ProducTopic"
+                }
+              }
+            }
+          }]
+        },
+        "Queues": [{
+          "Ref": "ProductQueue"
+        }]
+      }
+    },
+    "ProductSqsToProductSnsSubscription": {
+      "Type": "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {
+          "Fn::GetAtt": ["ProductQueue", "Arn"]
+        },
+        "Protocol": "sqs",
+        "TopicArn": {
+          "Ref": "ProducTopic"
+        },
+        "RawMessageDelivery": "true"
+      }
+    },
+    "ProductSqsEventTrigger": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Properties": {
+        "EventSourceArn": {
+          "Fn::GetAtt": ["ProductQueue", "Arn"]
+        },
+        "Enabled": "true",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ProductSqsHandlerFunction",
+            "Arn"
+          ]
+        }
+      }
     }
   },
-  "Outputs" : {
-    "ApiURL" : {
-        "Description" : "API endpoint URL for Prod environment",
-        "Value" : { "Fn::Sub" : "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/" }
+  "Outputs": {
+    "ApiURL": {
+      "Description": "API endpoint URL for Prod environment",
+      "Value": {
+        "Fn::Sub": "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+      }
     }
   }
 }
