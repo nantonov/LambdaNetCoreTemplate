@@ -16,7 +16,7 @@ namespace LambdaNetCoreTemplate.Lambda.Functions.Base
             ServiceProvider = Startup.BuildDependencies();
         }
 
-        protected async Task<TResponse> Process<TRequest, TModel, TResponse>(string json)
+        protected virtual async Task<TResponse> Process<TRequest, TModel, TResponse>(string json)
             where TRequest : IHasModelRequest<TModel>, new()
         {
             var request = new TRequest
@@ -30,10 +30,8 @@ namespace LambdaNetCoreTemplate.Lambda.Functions.Base
             return result;
         }
 
-        protected Task Process<TRequest, TModel>(string json) 
-            where TRequest : IHasModelRequest<TModel>, new()
-        {
-            return Process<TRequest, TModel, object>(json);
-        }
+        protected virtual Task Process<TRequest, TModel>(string json) 
+            where TRequest : IHasModelRequest<TModel>, new() =>
+            Process<TRequest, TModel, object>(json);
     }
 }

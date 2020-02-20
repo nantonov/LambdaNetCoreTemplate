@@ -5,7 +5,7 @@ using Amazon.Lambda.Core;
 using LambdaNetCoreTemplate.Application.Model;
 using LambdaNetCoreTemplate.Application.Requests;
 using LambdaNetCoreTemplate.Lambda.Functions.Base;
-using Newtonsoft.Json;
+using LambdaNetCoreTemplate.Lambda.Responses;
 
 namespace LambdaNetCoreTemplate.Lambda.Functions.ProductFunctions
 {
@@ -16,13 +16,13 @@ namespace LambdaNetCoreTemplate.Lambda.Functions.ProductFunctions
         {
             try
             {
-               var response = await Process<AddProductRequest, Product, Product>(request.Body);
-               return new APIGatewayProxyResponse { Body = JsonConvert.SerializeObject(response), StatusCode = 200 };
+                var response = await Process<AddProductRequest, Product, Product>(request.Body);
+                return ApiGatewayResponse.Ok(response);
             }
             catch (Exception e)
             {
                 LambdaLogger.Log(e.Message);
-                return new APIGatewayProxyResponse { Body = e.Message, StatusCode = 500 };
+                return ApiGatewayResponse.BadRequest(e.Message);
             }
         }
     }
