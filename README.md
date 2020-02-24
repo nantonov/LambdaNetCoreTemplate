@@ -1,2 +1,1 @@
-# LambdaNetCoreTemplate
-The template for lambda project which encapsulate the core logic of application.
+![.NET Core](https://github.com/nantonov/LambdaNetCoreTemplate/workflows/.NET%20Core/badge.svg?branch=master)
